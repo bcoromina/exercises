@@ -53,8 +53,7 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
       case Node(_, left, right) :: tail =>
         val maxLeft = maxDfa(left.toList ++ tail , acc + 1)
         val maxRight = maxDfa(right.toList ++ tail, acc + 1)
-       math.max(maxLeft,maxRight)
-
+        math.max(maxLeft,maxRight)
       case Nil => acc
     }
     maxDfa(this :: Nil, 0)

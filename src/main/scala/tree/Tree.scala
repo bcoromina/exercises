@@ -1,7 +1,5 @@
 package tree
 
-import scala.collection.immutable.Queue
-import scala.util.{Failure, Success, Try}
 
 
 trait Tree[+T <: Tree[T,V], +V] {

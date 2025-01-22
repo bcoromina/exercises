@@ -10,5 +10,6 @@ object Main {
     println(tree)
     println(tree.sorted)
     println(s"Height: ${(Node(5) add 2 add 6 add 7).height}")
+    println(s"Balanced: ${(Node(5) add 2 add 6 ).isBalanced}")
   }
 }

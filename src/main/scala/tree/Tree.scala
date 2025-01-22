@@ -57,6 +57,17 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
     maxDfa(this :: Nil, 0)
   }
 
+  def isBalanced: Boolean = {
+    def balanced(t: MyBinaryTree[V]): Boolean = t match {
+      case Node(_, Some(l), Some(r)) =>
+        balanced(l) && balanced(r)
+      case Node(_, None, None) => true
+      case Leaf => true
+      case _ => false
+    }
+    balanced(this)
+  }
+
 }
 
 case class Node[V](value: V, left: Option[MyBinaryTree[V]] = None, right: Option[MyBinaryTree[V]] = None) extends MyBinaryTree[V]

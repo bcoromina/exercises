@@ -2,50 +2,65 @@ package tree
 
 
 
-sealed trait Tree[+T] {
-
-  def add[S >: T](e: S)(implicit o: Ordering[S]): Tree[S] = {
-    def ins(t: Tree[S]): Tree[S] = t match {
-      case Node(value, left, right) =>
-        if(o.lt(e,value))
-          Node(value, ins(left), right)
-        else if(o.gt(e,value))
-          Node(value, left, ins(right))
-        else
-          t
-      case Leaf => Node(e)
-    }
-    ins(this)
-  }
-
-  def sorted: Seq[T] = {
-    def dfa(l: List[Tree[T]], acc: List[T]): List[T] = l match {
-      case Leaf :: _ => dfa(l.tail, acc)
-      case Node(v, Leaf, Leaf) :: tail => dfa(tail, v :: acc)
-      case Node(v, le, ri) :: tail => dfa(le :: tail , acc) ++ Seq(v) ++ dfa(ri :: tail, acc)
-      case Nil => acc
-    }
-    dfa(this :: Nil, Nil)
-  }
-
-  override def toString(): String = {
-    def levelSep(level: Int): String = (1 to (4*level)).map(_ =>" ").mkString
-    def str[S >: T](t: Tree[S], level: Int): String = t match {
-      case Node(value, Leaf, Leaf) =>
-        s"${levelSep(level)}[Level $level]: $value"
-      case Node(value, nl: Tree[S], nr: Tree[S]) =>
-        s"""${levelSep(level)}[Level $level]: $value
-           |${levelSep(level)}Left:
-           |${str(nl, level + 1)}
-           |${levelSep(level)}Right:
-           |${str(nr, level + 1)}
-           |""".stripMargin
-      case Leaf => s"${levelSep(level)}[Leaf]"
-    }
-
-    str(this, 1)
-  }
+trait Tree[+T <: Tree[T,V], +V] {
+  def left: Option[T]
+  def right: Option[T]
+  def value: V
 }
 
-case object Leaf extends Tree[Nothing]
-case class Node[T](value: T, l: Tree[T] = Leaf, r: Tree[T] = Leaf ) extends Tree[T]
+sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
+  override def left: Option[MyBinaryTree[V]]
+  override def right: Option[MyBinaryTree[V]]
+
+  def add[E >: V](e:E)(implicit o: Ordering[E]): MyBinaryTree[E]= {
+    def ins(t: MyBinaryTree[E], v: E): MyBinaryTree[E] = {
+
+      def insOpt(opt: Option[MyBinaryTree[E]], v: E): MyBinaryTree[E] = opt match {
+        case Some(t) => ins(t,v)
+        case None => Node(v, None, None)
+      }
+
+      t match {
+        case n@Node(nv, l, r) =>
+          if(o.lt(v,nv)) {
+            n.copy(left = Some(insOpt(l,v)))
+          } else if(o.gt(v, nv)) {
+            n.copy(right = Some(insOpt(r,v)))
+          } else
+            n
+        case Leaf =>  Node(v, None, None)
+      }
+    }
+
+    ins(this, e)
+  }
+
+  def sorted: List[V] = {
+    def dfa(stack: List[MyBinaryTree[V]], acc: List[V]): List[V] = stack match {
+      case Leaf :: tail => dfa(tail, acc)
+      case Node(v, left, right) :: tail =>
+        dfa(left.toList ++ tail , acc) ++ Seq(v) ++ dfa(right.toList ++ tail, acc)
+      case Nil => acc
+    }
+    dfa(this :: Nil, List.empty)
+  }
+
+}
+
+case class Node[V](value: V, left: Option[MyBinaryTree[V]] = None, right: Option[MyBinaryTree[V]] = None) extends MyBinaryTree[V]
+
+case object Leaf extends MyBinaryTree[Nothing] {
+  override def left: Option[MyBinaryTree[Nothing]] = None
+
+  override def right: Option[MyBinaryTree[Nothing]] = None
+
+  override def value: Nothing = throw new Exception("Trying to access the value of a Leaf")
+}
+
+
+// This doesn't compile because of mixing Tree types
+//sealed trait MyRedBlackTree[T,V] extends Tree[MyRedBlackTree[T,V], V]{
+//  override def left: Option[MyRedBlackTree[T,V]]
+//
+//  override def right: Option[MyBinaryTree[T,V]]
+//}

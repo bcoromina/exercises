@@ -1,5 +1,7 @@
 package tree
 
+import scala.collection.immutable.Queue
+import scala.util.{Failure, Success, Try}
 
 
 trait Tree[+T <: Tree[T,V], +V] {
@@ -43,6 +45,19 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
       case Nil => acc
     }
     dfa(this :: Nil, List.empty)
+  }
+
+  def height: Int = {
+    def maxDfa(stack: List[MyBinaryTree[V]], acc: Int): Int = stack match {
+      case Leaf :: tail => maxDfa(tail, acc)
+      case Node(_, left, right) :: tail =>
+        val maxLeft = maxDfa(left.toList ++ tail , acc + 1)
+        val maxRight = maxDfa(right.toList ++ tail, acc + 1)
+       math.max(maxLeft,maxRight)
+
+      case Nil => acc
+    }
+    maxDfa(this :: Nil, 0)
   }
 
 }

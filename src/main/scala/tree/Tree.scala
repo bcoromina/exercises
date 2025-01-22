@@ -68,6 +68,19 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
     balanced(this)
   }
 
+  def map[E](f: V => E): MyBinaryTree[E] = {
+    def dfa(stack: List[MyBinaryTree[V]], res: MyBinaryTree[E]):  MyBinaryTree[E] = stack match {
+      case Leaf :: tail => dfa(tail,  res)
+      case Node(v, left, right) :: tail =>
+        Node(
+          f(v),
+          left.map(l => dfa(l :: tail, res)),
+          right.map(r => dfa(r :: tail, res))
+        )
+      case Nil => res
+    }
+    dfa(this :: Nil, Leaf)
+  }
 }
 
 case class Node[V](value: V, left: Option[MyBinaryTree[V]] = None, right: Option[MyBinaryTree[V]] = None) extends MyBinaryTree[V]

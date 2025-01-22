@@ -2,11 +2,15 @@ package monad
 
 import Opt._
 
+trait Functor[F[_]] {
+  def map[A,B](m: F[A])(f: A => B): F[B]
+}
 
-trait Monad[F[_]] {
+
+trait Monad[F[_]] extends Functor[F]{
   def pure[T](a: T): F[T]
   def flatMap[A,B](m: F[A])(f: A => F[B]): F[B]
-  def map[A,B](m: F[A])(f: A => B): F[B] = flatMap(m)(f andThen pure)
+  override def map[A,B](m: F[A])(f: A => B): F[B] = flatMap(m)(f andThen pure)
 }
 
 object MonadInstances {

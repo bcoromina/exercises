@@ -11,5 +11,9 @@ object Main {
     println(tree.sorted)
     println(s"Height: ${(Node(5) add 2 add 6 add 7).height}")
     println(s"Balanced: ${(Node(5) add 2 add 6 ).isBalanced}")
+
+    val in = (Node(9) add 8 add 7 add 6 add 5 )
+    println(s"Tree: $in")
+    println(s"Mapped: ${in.map(_ + 1).sorted}")
   }
 }

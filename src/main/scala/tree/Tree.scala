@@ -14,7 +14,7 @@ trait Tree[+T <: Tree[T,V], +V] { self: T =>
 //  override def right: Option[MyBinaryTree[T,V]]
 //}
 
-// It doesn't compile because  AnotherBinaryTree != MyBinaryTree
+// It doesn't compile because  AnotherBinaryTree != MyBinaryTree ( self: T )
 //sealed trait AnotherBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
 //  override def left: Option[MyBinaryTree[V]]
 //  override def right: Option[MyBinaryTree[V]]

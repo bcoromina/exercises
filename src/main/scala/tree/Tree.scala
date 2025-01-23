@@ -1,12 +1,24 @@
 package tree
 
 
-
-trait Tree[+T <: Tree[T,V], +V] {
+trait Tree[+T <: Tree[T,V], +V] { self: T =>
   def left: Option[T]
   def right: Option[T]
   def value: V
 }
+
+// This doesn't compile because of mixing Tree types
+//sealed trait MyRedBlackTree[T,V] extends Tree[MyRedBlackTree[T,V], V]{
+//  override def left: Option[MyRedBlackTree[T,V]]
+//
+//  override def right: Option[MyBinaryTree[T,V]]
+//}
+
+// It doesn't compile because  AnotherBinaryTree != MyBinaryTree
+//sealed trait AnotherBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
+//  override def left: Option[MyBinaryTree[V]]
+//  override def right: Option[MyBinaryTree[V]]
+//}
 
 sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
   override def left: Option[MyBinaryTree[V]]
@@ -94,9 +106,4 @@ case object Leaf extends MyBinaryTree[Nothing] {
 }
 
 
-// This doesn't compile because of mixing Tree types
-//sealed trait MyRedBlackTree[T,V] extends Tree[MyRedBlackTree[T,V], V]{
-//  override def left: Option[MyRedBlackTree[T,V]]
-//
-//  override def right: Option[MyBinaryTree[T,V]]
-//}
+

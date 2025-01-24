@@ -24,7 +24,8 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
   override def left: Option[MyBinaryTree[V]]
   override def right: Option[MyBinaryTree[V]]
 
-  def add[E >: V](e:E)(implicit o: Ordering[E]): MyBinaryTree[E]= {
+  def add[E >: V : Ordering](e:E): MyBinaryTree[E]= {
+    val o = implicitly[Ordering[E]]
     def ins(t: MyBinaryTree[E], v: E): MyBinaryTree[E] = {
 
       def insOpt(opt: Option[MyBinaryTree[E]], v: E): MyBinaryTree[E] = opt match {

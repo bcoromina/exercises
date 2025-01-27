@@ -1,18 +1,6 @@
 package tree
 
-////////////////////////////////////////////////////////////////
-//trait TreeF[V] {
-//  type T <: TreeF[V] // using Family polymorphism
-//  def left: Option[TreeF[V]]
-//  def right: Option[TreeF[V]]
-//  def value: V
-//}
-//sealed trait MyBinaryTreeF[V] extends TreeF[V]{
-//  override type T = MyBinaryTreeF[V]
-//}
-//case class NodeF[V](value: V, left: Option[MyBinaryTreeF[V]], right: Option[MyBinaryTreeF[V]]) extends MyBinaryTreeF[V]
 
-////////////////////////////////////////////////////////////////
 trait Tree[T <: Tree[T,V], V] { self: T =>
   def left: Option[T]
   def right: Option[T]

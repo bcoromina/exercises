@@ -31,7 +31,7 @@ object ScalaTypes extends App{
   // In other words: def foo(r: NaiveProcessor[ReqA, RespB]): Unit = ???
 
   trait Processor[R <: Request] {
-    type RespType <: Response
+    type RespType <: Response // Family polymorphism
     // it ensures that processor of ReqA will give RespA as a response
     def process(req: R): RespType
   }

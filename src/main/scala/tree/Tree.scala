@@ -1,7 +1,19 @@
 package tree
 
+////////////////////////////////////////////////////////////////
+//trait TreeF[V] {
+//  type T <: TreeF[V] // using Family polymorphism
+//  def left: Option[TreeF[V]]
+//  def right: Option[TreeF[V]]
+//  def value: V
+//}
+//sealed trait MyBinaryTreeF[V] extends TreeF[V]{
+//  override type T = MyBinaryTreeF[V]
+//}
+//case class NodeF[V](value: V, left: Option[MyBinaryTreeF[V]], right: Option[MyBinaryTreeF[V]]) extends MyBinaryTreeF[V]
 
-trait Tree[+T <: Tree[T,V], +V] { self: T =>
+////////////////////////////////////////////////////////////////
+trait Tree[T <: Tree[T,V], V] { self: T =>
   def left: Option[T]
   def right: Option[T]
   def value: V
@@ -20,15 +32,13 @@ trait Tree[+T <: Tree[T,V], +V] { self: T =>
 //  override def right: Option[MyBinaryTree[V]]
 //}
 
-sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
+sealed trait MyBinaryTree[V] extends Tree[MyBinaryTree[V],V] {
   override def left: Option[MyBinaryTree[V]]
   override def right: Option[MyBinaryTree[V]]
 
-  def add[E >: V : Ordering](e:E): MyBinaryTree[E]= {
-    val o = implicitly[Ordering[E]]
-    def ins(t: MyBinaryTree[E], v: E): MyBinaryTree[E] = {
-
-      def insOpt(opt: Option[MyBinaryTree[E]], v: E): MyBinaryTree[E] = opt match {
+  def add(e:V)(implicit o: Ordering[V]): MyBinaryTree[V]= {
+    def ins(t: MyBinaryTree[V], v: V): MyBinaryTree[V] = {
+      def insOpt(opt: Option[MyBinaryTree[V]], v: V): MyBinaryTree[V] = opt match {
         case Some(t) => ins(t,v)
         case None => Node(v, None, None)
       }
@@ -41,7 +51,6 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
             n.copy(right = Some(insOpt(r,v)))
           } else
             n
-        case Leaf =>  Node(v, None, None)
       }
     }
 
@@ -50,7 +59,6 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
 
   def sorted: List[V] = {
     def dfa(stack: List[MyBinaryTree[V]], acc: List[V]): List[V] = stack match {
-      case Leaf :: tail => dfa(tail, acc)
       case Node(v, left, right) :: tail =>
         dfa(left.toList ++ tail , acc) ++ Seq(v) ++ dfa(right.toList ++ tail, acc)
       case Nil => acc
@@ -60,7 +68,6 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
 
   def height: Int = {
     def maxDfa(stack: List[MyBinaryTree[V]], acc: Int): Int = stack match {
-      case Leaf :: tail => maxDfa(tail, acc)
       case Node(_, left, right) :: tail =>
         val maxLeft = maxDfa(left.toList ++ tail , acc + 1)
         val maxRight = maxDfa(right.toList ++ tail, acc + 1)
@@ -70,41 +77,21 @@ sealed trait MyBinaryTree[+V] extends Tree[MyBinaryTree[V],V] {
     maxDfa(this :: Nil, 0)
   }
 
-  def isBalanced: Boolean = {
-    def balanced(t: MyBinaryTree[V]): Boolean = t match {
-      case Node(_, Some(l), Some(r)) =>
-        balanced(l) && balanced(r)
-      case Node(_, None, None) => true
-      case Leaf => true
-      case _ => false
-    }
-    balanced(this)
-  }
-
   def map[E](f: V => E): MyBinaryTree[E] = {
-    def dfa(stack: List[MyBinaryTree[V]], res: MyBinaryTree[E]):  MyBinaryTree[E] = stack match {
-      case Leaf :: tail => dfa(tail,  res)
+    def dfa(stack: List[MyBinaryTree[V]]):  MyBinaryTree[E] = stack match {
       case Node(v, left, right) :: tail =>
         Node(
           f(v),
-          left.map(l => dfa(l :: tail, res)),
-          right.map(r => dfa(r :: tail, res))
+          left.map(l => dfa(l :: tail)),
+          right.map(r => dfa(r :: tail))
         )
-      case Nil => res
     }
-    dfa(this :: Nil, Leaf)
+    dfa(this :: Nil)
   }
 }
 
 case class Node[V](value: V, left: Option[MyBinaryTree[V]] = None, right: Option[MyBinaryTree[V]] = None) extends MyBinaryTree[V]
 
-case object Leaf extends MyBinaryTree[Nothing] {
-  override def left: Option[MyBinaryTree[Nothing]] = None
-
-  override def right: Option[MyBinaryTree[Nothing]] = None
-
-  override def value: Nothing = throw new Exception("Trying to access the value of a Leaf")
-}
 
 
 

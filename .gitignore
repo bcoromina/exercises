@@ -1,0 +1,36 @@
+# SBT Directories
+/.idea/
+/.project
+/.classpath
+/.settings/
+/target/
+/project/target/
+/project/metals.sbt
+/metals.sbt
+
+# IntelliJ-specific files
+/.idea/
+/*.iml
+/out/
+
+# Metals & Bloop (Scala Metals and BSP-related files)
+/.bloop/
+/.metals/
+/.worksheet/
+
+# Log and Temp Files
+*.log
+*.swp
+*.swo
+*.bak
+*.tmp
+*.~*
+
+# Generated files
+*.class
+*.cache
+*.lock
+
+# MacOS system files
+.DS_Store
+

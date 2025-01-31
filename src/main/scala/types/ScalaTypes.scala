@@ -85,4 +85,62 @@ object ScalaTypes extends App{
 
 
   println(r)
+
+  /////////////////////////////////////////////////////////////////////////////////
+  // Similar than Decorator pattern
+
+  trait KafkaPublisher {
+    def publish(r: Response): Unit
+  }
+
+  implicit class ProcessorOps[Req <: Request](f: Req => Response ) {
+
+    type Processor = Req => Response
+
+    def withIdempotency(implicit store: Req => Option[Response]):  Processor = x => store(x).getOrElse(f(x))
+
+    def loggingResponse: Processor = { x =>
+      val resp = f(x)
+      println(resp)
+      resp
+    }
+
+    def publishToKafka(implicit publisher: KafkaPublisher): Processor = { x =>
+      val resp = f(x)
+      publisher.publish(resp)
+      resp
+    }
+  }
+
+
+  val respMap = Map.empty[Request, Response]
+  implicit val store: Request => Option[Response] = x => respMap.get(x)
+
+  implicit val kafkaPublisher = new KafkaPublisher {
+    override def publish(r: Response): Unit = ()
+  }
+
+
+  val processorA = new NaiveProcessor[ReqA, RespA] {
+    override def process(in: ReqA): RespA = RespA()
+  }
+
+  val processorB = new NaiveProcessor[ReqB, RespB] {
+    override def process(in: ReqB): RespB = RespB()
+  }
+
+  val f: ReqA => Response = processorA.process
+
+
+  def process(r: Request): Response = r match {
+    case ra:ReqA =>
+      val proc: ReqA => Response = (processorA.process _).withIdempotency.loggingResponse.publishToKafka
+      proc(ra)
+    case rb: ReqB =>
+      val proc: ReqB => Response = (processorB.process _).withIdempotency.loggingResponse
+      proc(rb)
+  }
+
+
+
 }
